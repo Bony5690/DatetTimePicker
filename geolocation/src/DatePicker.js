@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
-import { Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import DateTimePicker from 'react-native-modal-datetime-picker';
+import TimeButton from './TimeBlock';
 import moment from 'moment';
+
 
 export default class DateTime extends Component {
   constructor(props) {
@@ -12,82 +14,74 @@ export default class DateTime extends Component {
       chosenTime: '',
       isDateTimePickerVisible: false,
       isTimePickerVisible: false
+
     };
 
 
   }
-  _showDatePicker = () => this.setState({ isDateTimePickerVisible: true });
 
-  _showTimePicker = () => this.setState({ isTimePickerVisible: true });
+  showTime = (timeType, val) => {
+    this.setState({ [timeType]: val });
+  }
 
-  // _showDatePicker = () => this.setState({ isDateTimePickerVisible: true });
+  hideTime = (timeType, val) => {
+    this.setState({ [timeType]: val });
+  }
 
-  _hideDateTimePicker = () => this.setState({ isDateTimePickerVisible: false });
+  //if DatePicker is showing set the values for date 
+  handleTimePicked = (date) => {
+    if (this.state.isDateTimePickerVisible) {
+      this.setState({ chosenDate: moment(date).format(' MMMM, D YYYY'), chosenDay: moment(date).format(' dddd ') })
+      this.hideTime('isDateTimePickerVisible', false)
+    }
+    else {
+      // else if TimePicker is true set the values for time
+      if (this.state.isTimePickerVisible) {
+        this.setState({ chosenTime: moment(date).format(' h:mm a') })
+        this.hideTime('isTimePickerVisible', false)
 
-  _hideTimePicker = () => this.setState({ isTimePickerVisible: false });
-
-  _handleDatePicked = (date) => {
-    console.log('A date has been picked: ', date);
-    console.log(date)
-    this.setState({ chosenDate: moment(date).format(' MMMM, D YYYY'), chosenDay: moment(date).format(' dddd ') })
-    this._hideDateTimePicker();
-
-  };
-
-  _handleTimePicked = (date) => {
-    console.log(date)
-    this.setState({ chosenTime: moment(date).format(' h:mm a') })
-    this._hideTimePicker();
-
-  };
-
+      }
+    }
+  }
 
   render() {
     const { chosenDate, chosenTime, chosenDay } = this.state;
-    const { mode, } = this.props
+
     return (
-      <View >
+      <View>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+          <TimeButton
+            chosenDay={chosenDay}
+            chosenDate={chosenDate}
+            showDatePicker={() => this.showTime('isDateTimePickerVisible', true)}
+            mode={true} />
 
-        {
-          mode === 'date' ?
-            <TouchableOpacity onPress={this._showDatePicker}>
-              <View style={styles.wrapperStyle}>
-                <Text style={styles.timeTitle}>Date</Text>
-                <Text style={styles.timeStyle}>{this.state.chosenDay}</Text>
-                <Text style={styles.timeStyle}>{chosenDate}</Text>
-              </View>
+          <TimeButton
+            chosenTime={chosenTime}
+            showTimePicker={() => this.showTime('isTimePickerVisible', true)}
+            mode={false} />
+        </View>
 
-            </TouchableOpacity>
-
-            :
-            <TouchableOpacity onPress={this._showTimePicker}>
-              <View style={styles.wrapperStyle}>
-                <Text style={styles.timeTitle}>Time</Text>
-                <Text style={styles.timeStyle}>{chosenTime}</Text>
-              </View>
-
-            </TouchableOpacity>
-        }
 
         <DateTimePicker
-        
+
           mode='date'
           titleStyle={{ fontSize: 15, color: '#8E8E93', fontWeight: 'bold', letterSpacing: -0.24, lineHeight: 20 }}
           hideTitleContainerIOS={true}
           isVisible={this.state.isDateTimePickerVisible}
-          onConfirm={this._handleDatePicked}
-          onCancel={this._hideDateTimePicker}
+          onConfirm={this.handleTimePicked}
+          onCancel={() => this.hideTime('isDateTimePickerVisible', false)}
         />
 
         <DateTimePicker
-              backdropColor='white'
+          backdropColor='white'
           hideTitleContainerIOS={true}
           titleIOS='Pick a time'
           titleStyle={{ fontSize: 15, color: '#8E8E93', fontWeight: 'bold', letterSpacing: -0.24, lineHeight: 20 }}
           mode='time'
           isVisible={this.state.isTimePickerVisible}
-          onConfirm={this._handleTimePicked}
-          onCancel={this._hideTimePicker}
+          onConfirm={this.handleTimePicked}
+          onCancel={() => this.hideTime('isTimePickerVisible', false)}
         />
 
       </View>
@@ -97,30 +91,3 @@ export default class DateTime extends Component {
 }
 
 
-const styles = StyleSheet.create({
-
-  wrapperStyle: {
-    width: 175, height: 100, backgroundColor: 'white', padding: 5, borderRadius: 6, shadowColor: '#000',
-    shadowOffset: { width: 0.5, height: 0.5 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 1
-  },
-  timeStyle: {
-    fontSize: 17, color: '#6DA3D3', marginTop: 5, fontWeight: '400'
-  },
-
-  timeTitle: {
-    padding: 5, fontSize: 15, color: '#8E8E93', fontWeight: 'bold', letterSpacing: -0.24, lineHeight: 20
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
